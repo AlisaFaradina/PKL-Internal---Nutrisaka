@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminTokenController;
 use App\Http\Controllers\ActivationController;
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LicenseController;
@@ -12,7 +13,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SppgController;
 use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
@@ -34,9 +34,29 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/tokens/{token}/unbind', [AdminTokenController::class, 'unbind'])->name('tokens.unbind');
         Route::delete('/tokens/{token}', [AdminTokenController::class, 'destroy'])->name('tokens.destroy');
         Route::get('/tokens/export/csv', [AdminTokenController::class, 'exportCsv'])->name('tokens.export-csv');
+
+        // Permintaan Lisensi Perangkat (License Requests)
+        Route::get('/requests', [\App\Http\Controllers\Admin\AdminLicenseRequestController::class, 'index'])->name('requests.index');
+        Route::get('/requests/{licenseRequest}', [\App\Http\Controllers\Admin\AdminLicenseRequestController::class, 'show'])->name('requests.show');
+        Route::post('/requests/{licenseRequest}/generate', [\App\Http\Controllers\Admin\AdminLicenseRequestController::class, 'generate'])->name('requests.generate');
+        Route::post('/requests/{licenseRequest}/reject', [\App\Http\Controllers\Admin\AdminLicenseRequestController::class, 'reject'])->name('requests.reject');
     });
 });
 
+// Onboarding Flow: Pemilihan Mode Aplikasi (Mode Demo vs Mode Asli)
+Route::get('/onboarding', [ActivationController::class, 'showOnboarding'])->name('onboarding');
+Route::post('/onboarding/demo', [ActivationController::class, 'startDemoMode'])->name('onboarding.demo');
+Route::post('/onboarding/real', [ActivationController::class, 'startRealMode'])->name('onboarding.real');
+
+// API Pengambilan Device ID Aktual dari Perangkat
+Route::get('/api/device-id', [ActivationController::class, 'getDeviceIdApi'])->name('api.device-id');
+
+// Registrasi & Permohonan Lisensi Perangkat (Mengirim email ke admin: sakanutri@gmail.com)
+Route::post('/register-request', [ActivationController::class, 'submitLicenseRequest'])->name('activation.register-request');
+
+// Halaman Status & Kedaluwarsa Masa Uji Coba (Trial 7 Hari)
+Route::get('/trial-status', [ActivationController::class, 'showTrialStatus'])->name('trial.status');
+Route::get('/trial-expired', [ActivationController::class, 'showTrialExpired'])->name('trial.expired');
 
 // Login / Aktivasi Lisensi Perangkat dengan Token dari Admin
 Route::get('/login', [ActivationController::class, 'showRegister'])->name('login');
@@ -44,9 +64,15 @@ Route::post('/login', [ActivationController::class, 'register'])->name('login.st
 Route::get('/register-token', [ActivationController::class, 'showRegister'])->name('activation.register');
 Route::post('/register-token', [ActivationController::class, 'register'])->name('activation.register.store');
 Route::post('/register-token/demo', [ActivationController::class, 'registerDemo'])->name('activation.register.demo');
+Route::post('/register-token/trial', [ActivationController::class, 'startTrial'])->name('activation.register.trial');
 Route::redirect('/aktivasi', '/login');
 Route::get('/terkunci', [ActivationController::class, 'showLocked'])->name('activation.locked');
 Route::post('/terkunci/revalidate', [ActivationController::class, 'revalidate'])->name('activation.revalidate');
+Route::post('/request-license-token', [ActivationController::class, 'requestLicenseToken'])->name('activation.request-token');
+Route::post('/copy-license-draft', [ActivationController::class, 'copyLicenseRequestDraft'])->name('activation.copy-draft');
+
+// Pengalihan Mode Aplikasi dari Halaman About
+Route::post('/about/mode', [AboutController::class, 'switchMode'])->name('about.switch-mode');
 
 // Redirect root to dashboard
 Route::redirect('/', '/dashboard');
@@ -86,6 +112,9 @@ Route::get('/sales/{sale}/print-thermal', [SaleController::class, 'printThermal'
 // Pembayaran & Piutang
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+Route::post('/payments/{payment}/upload-proof', [PaymentController::class, 'uploadProof'])->name('payments.upload-proof');
+Route::post('/payments/{payment}/confirm', [PaymentController::class, 'confirmPayment'])->name('payments.confirm');
 
 // Stok & Mutasi
 Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
@@ -94,16 +123,7 @@ Route::post('/stock/in', [StockController::class, 'storeIn'])->name('stock.store
 Route::get('/stock/adjustment', [StockController::class, 'createAdjustment'])->name('stock.create-adjustment');
 Route::post('/stock/adjustment', [StockController::class, 'storeAdjustment'])->name('stock.store-adjustment');
 Route::get('/stock/history', [StockController::class, 'history'])->name('stock.history');
-
-// Pengiriman & Distribusi
-Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
-Route::get('/shipments/create', [ShipmentController::class, 'create'])->name('shipments.create');
-Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
-Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
-Route::patch('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.update-status');
-Route::post('/shipments/{shipment}/photos', [ShipmentController::class, 'uploadPhoto'])->name('shipments.upload-photo');
-Route::delete('/shipments/photos/{photo}', [ShipmentController::class, 'deletePhoto'])->name('shipments.delete-photo');
-Route::get('/shipments/{shipment}/surat-jalan', [ShipmentController::class, 'printSuratJalan'])->name('shipments.surat-jalan');
+Route::get('/stock/{product}', [StockController::class, 'show'])->whereNumber('product')->name('stock.show');
 
 // Laporan
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
@@ -117,3 +137,6 @@ Route::post('/settings/import-restore', [SettingController::class, 'importRestor
 Route::post('/settings/load-demo-data', [SettingController::class, 'loadDemoData'])->name('settings.load-demo-data');
 Route::post('/settings/license/check', [LicenseController::class, 'checkOnline'])->name('settings.license.check');
 Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('settings.license.deactivate');
+
+// Tentang Aplikasi
+Route::get('/about', [AboutController::class, 'index'])->name('about.index');

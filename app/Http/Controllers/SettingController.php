@@ -55,12 +55,13 @@ class SettingController extends Controller
             'new_pin' => 'required|string|min:4|max:6',
         ]);
 
-        $currentStored = AppSetting::get('security_pin', '1234');
-        if ($currentStored && $currentStored !== $validated['current_pin']) {
-            return back()->with('error', 'PIN lama salah.');
+        if (!empty($validated['current_pin'])) {
+            if (!AppSetting::verifyPin($validated['current_pin'])) {
+                return back()->with('error', 'PIN lama salah.');
+            }
         }
 
-        AppSetting::set('security_pin', $validated['new_pin']);
+        AppSetting::setPin($validated['new_pin']);
 
         return back()->with('success', 'PIN Keamanan berhasil diperbarui.');
     }
@@ -103,12 +104,14 @@ class SettingController extends Controller
     public function loadDemoData(Request $request)
     {
         try {
+            AppSetting::setApplicationMode('demo');
+
             Artisan::call('db:seed', [
                 '--class' => 'NutrisakaSampleSeeder',
                 '--force' => true,
             ]);
 
-            return redirect()->route('dashboard')->with('success', 'Data simulasi contoh (SPPG, produk, pesanan, penjualan, stok) berhasil dimuat!');
+            return redirect()->route('dashboard')->with('success', 'Data contoh simulasi (SPPG, produk, pesanan, penjualan, stok) berhasil dimuat dan Mode Demo telah diaktifkan!');
         } catch (\Throwable $e) {
             return back()->with('error', 'Gagal memuat data contoh: ' . $e->getMessage());
         }

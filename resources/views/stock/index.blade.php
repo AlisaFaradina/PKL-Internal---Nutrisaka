@@ -123,7 +123,9 @@
                                 </span>
                             </td>
                             <td>
-                                <strong style="font-size: 15px; color: var(--navy-900);">{{ $prod->name }}</strong>
+                                <a href="{{ route('stock.show', $prod) }}" style="font-weight: 600; font-size: 15px; color: var(--navy-900); text-decoration: none;">
+                                    {{ $prod->name }}
+                                </a>
                             </td>
                             <td><span class="badge badge-secondary">{{ $prod->category->name }}</span></td>
                             <td><strong>{{ $prod->unit }}</strong></td>

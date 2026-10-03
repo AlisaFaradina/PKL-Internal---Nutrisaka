@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasSimulationMode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockMovement extends Model
 {
+    use HasSimulationMode;
+
     protected $fillable = [
         'product_id',
         'type',
@@ -16,12 +19,14 @@ class StockMovement extends Model
         'reference_type',
         'reference_id',
         'notes',
+        'is_simulation',
     ];
 
     protected $casts = [
         'quantity' => 'float',
         'before_stock' => 'float',
         'after_stock' => 'float',
+        'is_simulation' => 'boolean',
     ];
 
     public function product(): BelongsTo

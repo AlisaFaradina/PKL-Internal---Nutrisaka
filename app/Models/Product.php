@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Traits\HasSimulationMode;
+
 class Product extends Model
 {
+    use HasSimulationMode;
+
     protected $fillable = [
         'category_id',
         'sku',
@@ -19,6 +23,7 @@ class Product extends Model
         'current_stock',
         'min_stock',
         'is_active',
+        'is_simulation',
         'description',
     ];
 
@@ -28,6 +33,7 @@ class Product extends Model
         'current_stock' => 'float',
         'min_stock' => 'float',
         'is_active' => 'boolean',
+        'is_simulation' => 'boolean',
     ];
 
     public function category(): BelongsTo

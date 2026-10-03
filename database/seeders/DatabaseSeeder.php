@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(NutrisakaSampleSeeder::class);
+        // Hanya inisialisasi akun administrator dan pool token resmi.
+        // Sample seeder TIDAK otomatis dipanggil agar Real Mode dimulai bersih.
+        $this->call(AdminUserSeeder::class);
     }
 }

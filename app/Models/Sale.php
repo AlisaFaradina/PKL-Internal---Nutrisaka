@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSimulationMode;
 use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sale extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasSimulationMode;
     protected $fillable = [
         'invoice_number',
         'order_id',
@@ -24,6 +25,7 @@ class Sale extends Model
         'payment_status',
         'status',
         'notes',
+        'is_simulation',
     ];
 
     protected $casts = [
@@ -34,6 +36,7 @@ class Sale extends Model
         'total_amount' => 'float',
         'paid_amount' => 'float',
         'remaining_balance' => 'float',
+        'is_simulation' => 'boolean',
     ];
 
     public function sppg(): BelongsTo
@@ -54,11 +57,6 @@ class Sale extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class)->latest('payment_date');
-    }
-
-    public function shipments(): HasMany
-    {
-        return $this->hasMany(Shipment::class);
     }
 
     public function getPaymentStatusLabelAttribute(): string

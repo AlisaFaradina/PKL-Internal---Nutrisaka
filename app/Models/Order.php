@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasSimulationMode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
+    use HasSimulationMode;
+
     protected $fillable = [
         'order_number',
         'sppg_id',
@@ -17,12 +20,14 @@ class Order extends Model
         'status',
         'total_amount',
         'notes',
+        'is_simulation',
     ];
 
     protected $casts = [
         'order_date' => 'date',
         'delivery_date' => 'date',
         'total_amount' => 'float',
+        'is_simulation' => 'boolean',
     ];
 
     public function sppg(): BelongsTo

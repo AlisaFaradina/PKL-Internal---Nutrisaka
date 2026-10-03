@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\AppSetting;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Sppg;
 use App\Services\SaleService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
@@ -80,16 +82,29 @@ class SaleController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $sale = $this->saleService->createSale([
-            'sppg_id' => $validated['sppg_id'],
-            'sale_date' => $validated['sale_date'],
-            'due_date' => $validated['due_date'] ?? null,
-            'discount' => $validated['discount'] ?? 0,
-            'initial_paid' => $validated['initial_paid'] ?? 0,
-            'payment_method' => $validated['payment_method'] ?? 'tunai',
-            'payment_reference' => $validated['payment_reference'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-        ], $validated['items']);
+        $sale = DB::transaction(function () use ($validated) {
+            $sale = $this->saleService->createSale([
+                'sppg_id' => $validated['sppg_id'],
+                'sale_date' => $validated['sale_date'],
+                'due_date' => $validated['due_date'] ?? null,
+                'discount' => $validated['discount'] ?? 0,
+                'initial_paid' => $validated['initial_paid'] ?? 0,
+                'payment_method' => $validated['payment_method'] ?? 'tunai',
+                'payment_reference' => $validated['payment_reference'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ], $validated['items']);
+
+            ActivityLog::record(
+                'sale_created',
+                Sale::class,
+                $sale->id,
+                "Faktur penjualan {$sale->invoice_number} berhasil diterbitkan (Total: Rp " . number_format($sale->grand_total, 0, ',', '.') . ")",
+                null,
+                ['invoice_number' => $sale->invoice_number, 'grand_total' => $sale->grand_total]
+            );
+
+            return $sale;
+        });
 
         return redirect()->route('sales.show', $sale)
             ->with('success', "Penjualan {$sale->invoice_number} berhasil dicatat dan stok produk telah dipotong.");
@@ -125,7 +140,18 @@ class SaleController extends Controller
             'reason' => 'required|string|max:255',
         ]);
 
-        $this->saleService->cancelSale($sale, $validated['reason']);
+        DB::transaction(function () use ($sale, $validated) {
+            $this->saleService->cancelSale($sale, $validated['reason']);
+
+            ActivityLog::record(
+                'sale_cancelled',
+                Sale::class,
+                $sale->id,
+                "Faktur penjualan {$sale->invoice_number} dibatalkan: {$validated['reason']}",
+                ['status' => 'selesai'],
+                ['status' => 'batal', 'cancel_reason' => $validated['reason']]
+            );
+        });
 
         return redirect()->route('sales.show', $sale)
             ->with('success', "Penjualan {$sale->invoice_number} telah dibatalkan dan stok produk telah dikembalikan.");

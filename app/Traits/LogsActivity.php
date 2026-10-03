@@ -17,7 +17,7 @@ trait LogsActivity
                 'created',
                 static::class,
                 $model->id,
-                class_basename(static::class) . ' baru dibuat: ' . ($model->name ?? $model->shipment_number ?? $model->invoice_number ?? $model->order_number ?? '#' . $model->id),
+                class_basename(static::class) . ' baru dibuat: ' . ($model->name ?? $model->invoice_number ?? $model->order_number ?? '#' . $model->id),
                 null,
                 $model->getAttributes()
             );
@@ -48,7 +48,7 @@ trait LogsActivity
                 'deleted',
                 static::class,
                 $model->id,
-                class_basename(static::class) . ' dihapus: ' . ($model->name ?? $model->shipment_number ?? $model->invoice_number ?? '#' . $model->id),
+                class_basename(static::class) . ' dihapus: ' . ($model->name ?? $model->invoice_number ?? '#' . $model->id),
                 $model->getAttributes(),
                 null
             );

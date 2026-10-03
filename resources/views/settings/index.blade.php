@@ -228,18 +228,28 @@
         </div>
 
         <!-- Simulasi Data Contoh -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">Data Simulasi & Contoh</div>
+        <div class="card" style="border-left: 4px solid var(--warning);">
+            <div class="card-header" style="background: #fffbeb; border-bottom-color: #fde68a;">
+                <div class="card-title" style="color: #92400e;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                        <polyline points="2 17 12 22 22 17"/>
+                        <polyline points="2 12 12 17 22 12"/>
+                    </svg>
+                    Contoh Data Simulasi (Mode Demo)
+                </div>
             </div>
             <div class="card-body">
+                <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 12px; font-size: 12px; color: #92400e; line-height: 1.5;">
+                    <strong>Perhatian:</strong> Data simulasi ditujukan untuk demonstrasi aplikasi dan tidak akan menghapus atau mengubah data operasional nyata Anda.
+                </div>
                 <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 14px;">
-                    Muat data contoh master SPPG, produk bahan pangan segar, pesanan masuk, dan transaksi penjualan untuk keperluan demo.
+                    Memulai/memasukkan contoh data simulasi (produk, SPPG, transaksi pesanan, stok, dan pembayaran) untuk demonstrasi aplikasi.
                 </p>
-                <form action="{{ route('settings.load-demo-data') }}" method="POST" onsubmit="return confirm('Muat data contoh simulasi Nutrisaka?');">
+                <form action="{{ route('settings.load-demo-data') }}" method="POST" onsubmit="return confirm('Data contoh simulasi akan ditambahkan untuk keperluan demonstrasi. Data ini bukan data operasional nyata. Lanjutkan?');">
                     @csrf
-                    <button type="submit" class="btn btn-outline" style="width: 100%;">
-                        Muat Data Contoh Simulasi
+                    <button type="submit" class="btn btn-outline" style="width: 100%; border-color: #f59e0b; color: #b45309; font-weight: 600;">
+                        Mulai Contoh Data Simulasi
                     </button>
                 </form>
             </div>

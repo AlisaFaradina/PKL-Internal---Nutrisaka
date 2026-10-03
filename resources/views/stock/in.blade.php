@@ -32,30 +32,15 @@
                     </select>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label">Kuantitas / Jumlah Masuk <span class="required">*</span></label>
-                            <input type="number" step="0.01" min="0.01" name="quantity" id="qtyInput" class="form-input" placeholder="Contoh: 50" value="{{ old('quantity') }}" required style="font-size: 16px; font-weight: 700; color: var(--success);">
-                            <div class="form-hint" id="unitHint">Satuan: -</div>
-                        </div>
-                    </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label">Sumber Pasokan / Pengadaan <span class="required">*</span></label>
-                            <select name="source" class="form-select" required>
-                                <option value="purchase">Pembelian dari Petani / Pasar Induk</option>
-                                <option value="supplier_upstream">Distributor Pabrik Pangan</option>
-                                <option value="harvest">Hasil Panen Mitra Supplier</option>
-                                <option value="initial">Penerimaan Lainnya</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">Kuantitas / Jumlah Masuk <span class="required">*</span></label>
+                    <input type="number" step="0.01" min="0.01" name="quantity" id="qtyInput" class="form-input" placeholder="Contoh: 50" value="{{ old('quantity') }}" required style="font-size: 16px; font-weight: 700; color: var(--success);">
+                    <div class="form-hint" id="unitHint">Satuan: -</div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Catatan Pengadaan / Nomor Surat Jalan Pemasok</label>
-                    <textarea name="notes" rows="3" class="form-textarea" placeholder="Contoh: Pengiriman DO dari Petani Cianjur No. SJ-88712. Kualitas bagus grade A.">{{ old('notes') }}</textarea>
+                    <label class="form-label">Catatan (Opsional)</label>
+                    <textarea name="notes" rows="3" class="form-textarea" placeholder="Catatan tambahan mengenai penerimaan barang...">{{ old('notes') }}</textarea>
                 </div>
 
                 <div style="background: var(--bg-alt); padding: 14px; border-radius: var(--radius-md); font-size: 13px; color: var(--text-sub);">

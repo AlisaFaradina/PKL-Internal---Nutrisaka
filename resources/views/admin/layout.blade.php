@@ -170,12 +170,32 @@
         </a>
 
         <div class="admin-nav-actions">
-            @if(auth()->guard('admin')->check())
+                <a href="{{ route('admin.tokens.index') }}" class="btn-admin-nav {{ request()->routeIs('admin.tokens.*') ? 'active' : '' }}" style="{{ request()->routeIs('admin.tokens.*') ? 'background: rgba(2, 132, 199, 0.4); border-color: var(--admin-sky-light);' : '' }}">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span>Pool Token</span>
+                </a>
+
+                @php
+                    $pendingReqCount = \App\Models\LicenseRequest::where('status', 'pending')->count();
+                @endphp
+                <a href="{{ route('admin.requests.index') }}" class="btn-admin-nav {{ request()->routeIs('admin.requests.*') ? 'active' : '' }}" style="{{ request()->routeIs('admin.requests.*') ? 'background: rgba(2, 132, 199, 0.4); border-color: var(--admin-sky-light);' : '' }}">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span>Permintaan Lisensi</span>
+                    @if($pendingReqCount > 0)
+                        <span style="background: #ef4444; color: white; border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: 800; margin-left: 4px;">{{ $pendingReqCount }}</span>
+                    @endif
+                </a>
+
+                @if(auth()->guard('admin')->check())
                 <div class="admin-user-pill">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                     </svg>
-                    <span>Login: <strong>{{ auth()->guard('admin')->user()->name }}</strong> ({{ auth()->guard('admin')->user()->email }})</span>
+                    <span><strong>{{ auth()->guard('admin')->user()->name }}</strong></span>
                 </div>
 
                 <a href="{{ route('dashboard') }}" class="btn-admin-nav" title="Kembali ke Aplikasi Utama Supplier SPPG" target="_blank">

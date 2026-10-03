@@ -137,6 +137,14 @@
                     </svg>
                     <span>Pengaturan & Backup</span>
                 </a>
+                <a href="{{ route('about.index') }}" class="nav-item {{ request()->routeIs('about.*') ? 'active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>Tentang Nutrisaka</span>
+                </a>
                 <a href="{{ route('admin.dashboard') }}" class="nav-item" target="_blank" title="Buka Panel Pemilik Aplikasi untuk Mengatur Token Lisensi">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -162,10 +170,24 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="header-badge-offline" title="Sistem berjalan offline secara lokal">
-                        <span class="status-dot"></span>
-                        <span>Mode Offline Aktif</span>
-                    </div>
+                    <!-- Application Mode Badge -->
+                    @if(isset($applicationMode) && $applicationMode === 'demo')
+                        <a href="{{ route('about.index') }}" class="header-badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;" title="Klik untuk informasi mode simulasi">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #d97706;"></span>
+                            <span>MODE DEMO (SIMULASI)</span>
+                        </a>
+                    @elseif(isset($licenseStatus) && $licenseStatus === 'trial')
+                        <a href="{{ route('trial.status') }}" class="header-badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-weight: 700; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;" title="Klik untuk rincian status masa uji coba">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                            <span>TRIAL: {{ $trialStatus['time_remaining']['formatted'] ?? 'Aktif' }}</span>
+                        </a>
+                    @else
+                        <div class="header-badge-offline" title="Sistem berjalan offline secara lokal">
+                            <span class="status-dot"></span>
+                            <span>Mode Offline Aktif</span>
+                        </div>
+                    @endif
+
                     <div class="header-date" id="liveClockDisplay">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"/>
@@ -178,6 +200,22 @@
             </header>
 
             <div class="page-content">
+
+                <!-- Trial Active Alert Banner -->
+                @if(isset($licenseStatus) && $licenseStatus === 'trial')
+                    <div style="background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border: 1px solid #86efac; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13.5px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>
+                                <strong>Masa Uji Coba (Trial 7 Hari) Aktif:</strong> Sisa waktu <strong>{{ $trialStatus['time_remaining']['formatted'] ?? '7 hari' }}</strong>. Anda dapat mengelola Dashboard, Pesanan, dan Penjualan.
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                            <a href="{{ route('trial.status') }}" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 12px; font-weight: 600;">Lihat Status</a>
+                            <a href="{{ route('onboarding') }}" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 12px; font-weight: 700;">Aktivasi Lisensi</a>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Notifications / Flash Alerts -->
                 @if(session('success'))

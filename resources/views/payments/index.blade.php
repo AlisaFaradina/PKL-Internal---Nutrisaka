@@ -165,6 +165,7 @@
                             <th>No. Faktur</th>
                             <th>Pelanggan SPPG</th>
                             <th>Metode Bayar</th>
+                            <th>Status Konfirmasi</th>
                             <th>No. Referensi / Bank</th>
                             <th style="text-align: right;">Jumlah Diterima (Rp)</th>
                         </tr>
@@ -172,7 +173,11 @@
                     <tbody>
                         @forelse($payments as $p)
                             <tr>
-                                <td><strong>{{ $p->payment_number }}</strong></td>
+                                <td>
+                                    <a href="{{ route('payments.show', $p) }}" style="font-weight: 700; color: var(--sky-600);">
+                                        {{ $p->payment_number }}
+                                    </a>
+                                </td>
                                 <td>{{ $p->payment_date->format('d/m/Y') }}</td>
                                 <td>
                                     <a href="{{ route('sales.show', $p->sale) }}" style="font-weight: 700; color: var(--sky-600);">
@@ -182,6 +187,17 @@
                                 <td><strong>{{ $p->sale->sppg->name }}</strong></td>
                                 <td>
                                     <span class="badge badge-info">{{ ucfirst($p->payment_method) }}</span>
+                                </td>
+                                <td>
+                                    @if($p->confirmation_status === 'pending')
+                                        <span class="badge badge-warning">Menunggu</span>
+                                    @elseif($p->confirmation_status === 'confirmed')
+                                        <span class="badge badge-success">Dikonfirmasi</span>
+                                    @elseif($p->confirmation_status === 'rejected')
+                                        <span class="badge badge-danger">Ditolak</span>
+                                    @else
+                                        <span class="badge badge-secondary">{{ ucfirst($p->confirmation_status) }}</span>
+                                    @endif
                                 </td>
                                 <td>{{ $p->reference_number ?: '-' }}</td>
                                 <td style="text-align: right; font-weight: 800; color: var(--success); font-size: 15px;">

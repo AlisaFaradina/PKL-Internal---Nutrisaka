@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasSimulationMode;
 use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sppg extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasSimulationMode;
+
     protected $fillable = [
         'code',
         'name',
@@ -17,10 +19,12 @@ class Sppg extends Model
         'address',
         'notes',
         'is_active',
+        'is_simulation',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_simulation' => 'boolean',
     ];
 
     public function orders(): HasMany
@@ -31,11 +35,6 @@ class Sppg extends Model
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
-    }
-
-    public function shipments(): HasMany
-    {
-        return $this->hasMany(Shipment::class);
     }
 
     public function getTotalSalesAmountAttribute(): float

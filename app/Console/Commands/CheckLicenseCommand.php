@@ -26,14 +26,18 @@ class CheckLicenseCommand extends Command
         }
 
         $verification = $licenseService->verifyLocal();
+        $details = $licenseService->getDeviceDetails();
 
         $this->table(['Parameter', 'Nilai'], [
-            ['Status Valid', $verification['valid'] ? 'YA (Aktif)' : 'TIDAK'],
+            ['ID Aplikasi', $details['app_id']],
+            ['Versi Aplikasi', $details['app_version']],
+            ['ID Perangkat (Hardware)', $details['device_id']],
+            ['Nama Perangkat', $details['device_name']],
+            ['Sistem Operasi', $details['os_name'] . ' (' . $details['os_architecture'] . ')'],
+            ['Status Valid', $verification['valid'] ? 'YA (Aktif Selamanya)' : 'TIDAK (Terkunci/Belum Terdaftar)'],
             ['Status Lisensi', strtoupper($verification['status'])],
             ['Pesan', $verification['message']],
-            ['Sidik Perangkat', $licenseService->getShortFingerprint()],
-            ['Token', $verification['license'] ? $verification['license']->token_masked : 'Belum Terdaftar'],
-            ['Masa Tenggang Sisa', $verification['license'] ? ($verification['license']->daysUntilLock() . ' hari') : '-'],
+            ['Kunci Produk / Token', $verification['license'] ? $verification['license']->token_masked : 'Belum Terdaftar'],
         ]);
 
         return $verification['valid'] ? Command::SUCCESS : Command::FAILURE;

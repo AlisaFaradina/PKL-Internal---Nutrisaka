@@ -33,9 +33,71 @@ class AppSetting extends Model
             'invoice_footer_notes' => 'Barang yang telah diterima harap diperiksa. Pembayaran transfer mohon sertakan No. Invoice.',
             'security_pin' => '1234',
             'thermal_paper_size' => '58mm',
+            'application_mode' => 'real',
         ];
 
         $stored = static::pluck('value', 'key')->toArray();
         return array_merge($defaults, $stored);
     }
+
+    /**
+     * Mengambil mode aplikasi yang aktif (real / demo).
+     */
+    public static function getApplicationMode(): string
+    {
+        return static::get('application_mode', 'real');
+    }
+
+    /**
+     * Mengatur mode aplikasi (real / demo).
+     */
+    public static function setApplicationMode(string $mode): void
+    {
+        $validMode = in_array(strtolower($mode), ['real', 'demo'], true) ? strtolower($mode) : 'real';
+        static::set('application_mode', $validMode);
+    }
+
+    public static function isRealMode(): bool
+    {
+        return static::getApplicationMode() === 'real';
+    }
+
+    public static function isDemoMode(): bool
+    {
+        return static::getApplicationMode() === 'demo';
+    }
+
+    /**
+     * Memverifikasi PIN keamanan (mendukung hashed bcrypt dan legacy plaintext).
+     */
+    public static function verifyPin(string $inputPin): bool
+    {
+        $stored = static::get('security_pin', '1234');
+        if (empty($stored)) {
+            return false;
+        }
+
+        // Jika tersimpan sebagai bcrypt hash
+        if (str_starts_with($stored, '$2y$') || str_starts_with($stored, '$2a$')) {
+            return \Illuminate\Support\Facades\Hash::check($inputPin, $stored);
+        }
+
+        // Legacy plaintext fallback
+        if ($stored === $inputPin) {
+            // Otomatis migrasikan ke hash
+            static::setPin($inputPin);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Menyimpan PIN keamanan baru dalam bentuk hash.
+     */
+    public static function setPin(string $newPin): void
+    {
+        static::set('security_pin', \Illuminate\Support\Facades\Hash::make($newPin));
+    }
 }
+

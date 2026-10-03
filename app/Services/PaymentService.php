@@ -18,13 +18,14 @@ class PaymentService
         string $method = 'transfer',
         ?string $reference = null,
         ?string $notes = null,
-        ?string $date = null
+        ?string $date = null,
+        ?string $proofFile = null
     ): Payment {
         if ($amount <= 0) {
             throw new InvalidArgumentException('Jumlah pembayaran harus lebih dari 0.');
         }
 
-        return DB::transaction(function () use ($sale, $amount, $method, $reference, $notes, $date) {
+        return DB::transaction(function () use ($sale, $amount, $method, $reference, $notes, $date, $proofFile) {
             $payment = Payment::create([
                 'payment_number' => Payment::generatePaymentNumber(),
                 'sale_id' => $sale->id,
@@ -33,6 +34,9 @@ class PaymentService
                 'payment_method' => $method,
                 'reference_number' => $reference,
                 'notes' => $notes,
+                'proof_file' => $proofFile,
+                'confirmation_status' => $proofFile ? 'pending' : 'confirmed',
+                'payment_uploaded_at' => $proofFile ? now() : null,
             ]);
 
             // Hitung ulang seluruh pembayaran yang telah masuk untuk transaksi ini

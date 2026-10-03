@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Services\StockService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
@@ -52,6 +54,14 @@ class StockController extends Controller
         return view('stock.index', compact('products', 'categories', 'stats'));
     }
 
+    public function show(Product $product)
+    {
+        $product->load('category', 'stockMovements');
+        $stockMovements = $product->stockMovements()->latest()->paginate(20);
+
+        return view('stock.show', compact('product', 'stockMovements'));
+    }
+
     public function createIn()
     {
         $products = Product::where('is_active', true)->orderBy('name')->get();
@@ -63,18 +73,30 @@ class StockController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|numeric|min:0.01',
-            'source' => 'required|string|max:50', // purchase, harvest, supplier_upstream, other
             'notes' => 'nullable|string|max:255',
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
+        $product = DB::transaction(function () use ($validated) {
+            $product = Product::findOrFail($validated['product_id']);
 
-        $this->stockService->recordStockIn(
-            product: $product,
-            quantity: (float) $validated['quantity'],
-            source: $validated['source'],
-            notes: $validated['notes'] ?? 'Barang Masuk / Pembelian Pasokan'
-        );
+            $this->stockService->recordStockIn(
+                product: $product,
+                quantity: (float) $validated['quantity'],
+                source: 'purchase',
+                notes: $validated['notes'] ?? 'Barang Masuk'
+            );
+
+            ActivityLog::record(
+                'stock_in',
+                Product::class,
+                $product->id,
+                "Penerimaan stok masuk: {$product->name} (+{$validated['quantity']} {$product->unit})",
+                null,
+                ['product_id' => $product->id, 'quantity' => $validated['quantity']]
+            );
+
+            return $product;
+        });
 
         return redirect()->route('stock.index')
             ->with('success', "Stok {$product->name} berhasil ditambahkan sebanyak {$validated['quantity']} {$product->unit}.");
@@ -94,13 +116,27 @@ class StockController extends Controller
             'notes' => 'required|string|max:255',
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
+        $product = DB::transaction(function () use ($validated) {
+            $product = Product::findOrFail($validated['product_id']);
+            $oldStock = $product->current_stock;
 
-        $this->stockService->adjustStock(
-            product: $product,
-            physicalQty: (float) $validated['physical_qty'],
-            notes: $validated['notes']
-        );
+            $this->stockService->adjustStock(
+                product: $product,
+                physicalQty: (float) $validated['physical_qty'],
+                notes: $validated['notes']
+            );
+
+            ActivityLog::record(
+                'stock_adjustment',
+                Product::class,
+                $product->id,
+                "Penyesuaian stok fisik: {$product->name} dari {$oldStock} menjadi {$validated['physical_qty']} {$product->unit} (Catatan: {$validated['notes']})",
+                ['current_stock' => $oldStock],
+                ['current_stock' => $validated['physical_qty']]
+            );
+
+            return $product;
+        });
 
         return redirect()->route('stock.index')
             ->with('success', "Penyesuaian stok untuk {$product->name} berhasil disimpan. Stok fisik kini: {$validated['physical_qty']} {$product->unit}.");

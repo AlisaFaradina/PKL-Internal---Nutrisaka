@@ -399,6 +399,12 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label">Email <span class="required">*</span></label>
+                            <input type="email" name="email" class="form-input" placeholder="contoh@email.com" value="{{ old('email', $settings['supplier_email']) }}" required>
+                            <div class="form-hint">Email ini akan digunakan untuk menerima token lisensi dari admin.</div>
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label">Alamat Kantor / Gudang Logistik</label>
                             <textarea name="supplier_address" rows="2" class="form-textarea" placeholder="Alamat lengkap operasional supplier">{{ old('supplier_address', $settings['supplier_address']) }}</textarea>
                         </div>
@@ -433,24 +439,40 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Masukkan Token Lisensi <span class="required">*</span></label>
+                            <label class="form-label">Masukkan Token Lisensi (Opsional)</label>
                             <div class="token-input-box">
-                                <input type="text" name="token" id="tokenField" class="token-input" placeholder="NTRS-XXXX-XXXX-XXXX" value="{{ old('token') }}" required autocomplete="off" autofocus>
+                                <input type="text" name="token" id="tokenField" class="token-input" placeholder="NTRS-XXXX-XXXX-XXXX" value="{{ old('token') }}" autocomplete="off">
                             </div>
-                            <div class="form-hint" style="margin-top: 6px;">Format token 16 karakter dipisahkan tanda strip.</div>
+                            <div class="form-hint" style="margin-top: 6px;">
+                                Jika Anda memiliki token lisensi, masukkan di sini. Jika tidak, biarkan kosong untuk memulai <strong>Free Trial 7 Hari</strong>.
+                            </div>
+                        </div>
+
+                        <!-- Free Trial Info -->
+                        <div class="help-box" style="background: #fef3c7; border-color: #fde68a; color: #92400e; margin-top: 16px;">
+                            <div style="font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; color: #92400e;">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                Free Trial 7 Hari
+                            </div>
+                            <p style="margin: 0 0 10px 0; font-size: 12.5px; line-height: 1.4;">
+                                Nikmati penggunaan Nutrisaka secara gratis selama 7 hari. Setelah masa trial berakhir, silakan ajukan token lisensi kepada admin untuk melanjutkan penggunaan.
+                            </p>
                         </div>
 
                         <!-- Hardware Fingerprint Info -->
                         <div class="device-info-badge">
                             <div>
-                                <span style="font-size: 11px; text-transform: uppercase; color: #166534; font-weight: 600; display: block;">Perangkat Ini:</span>
-                                <strong>{{ $shortFingerprint }}</strong>
+                                <span style="font-size: 11px; text-transform: uppercase; color: #166534; font-weight: 600; display: block;">Device ID:</span>
+                                <strong>{{ $deviceId }}</strong>
                             </div>
-                            <button type="button" class="btn-copy" onclick="copyFingerprint('{{ $fingerprint }}')">
-                                Salin ID Lengkap
+                            <button type="button" class="btn-copy" onclick="copyDeviceId('{{ $deviceId }}')">
+                                Salin Device ID
                             </button>
                         </div>
                         <input type="hidden" id="fullFingerprint" value="{{ $fingerprint }}">
+                        <input type="hidden" id="deviceId" value="{{ $deviceId }}">
                     </div>
 
                     <!-- Permohonan Token ke Admin -->
@@ -525,6 +547,15 @@
         e.target.value = parts.join('-');
     });
 
+    // Salin Device ID
+    function copyDeviceId(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Device ID berhasil disalin ke clipboard:\n' + text);
+        }).catch(() => {
+            prompt('Salin Device ID ini secara manual:', text);
+        });
+    }
+
     // Salin sidik perangkat lengkap
     function copyFingerprint(text) {
         navigator.clipboard.writeText(text).then(() => {
@@ -532,6 +563,26 @@
         }).catch(() => {
             prompt('Salin Sidik Perangkat ini secara manual:', text);
         });
+    }
+
+    // Deteksi NativePHP vs Browser
+    function isNativePHP() {
+        return typeof window !== 'undefined' && window.__NATIVEPHP__ === true;
+    }
+
+    // Buka URL dengan metode yang sesuai environment
+    function openExternalUrl(url) {
+        if (isNativePHP()) {
+            // NativePHP: use Window API
+            if (typeof window.__native_openExternal === 'function') {
+                window.__native_openExternal(url);
+            } else {
+                console.warn('NativePHP external open not available');
+            }
+        } else {
+            // Browser: redirect
+            window.location.href = url;
+        }
     }
 
     // Deteksi koneksi online / offline
