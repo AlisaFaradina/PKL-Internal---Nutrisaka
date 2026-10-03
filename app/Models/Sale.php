@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sale extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'invoice_number',
         'order_id',
@@ -52,6 +54,11 @@ class Sale extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class)->latest('payment_date');
+    }
+
+    public function shipments(): HasMany
+    {
+        return $this->hasMany(Shipment::class);
     }
 
     public function getPaymentStatusLabelAttribute(): string

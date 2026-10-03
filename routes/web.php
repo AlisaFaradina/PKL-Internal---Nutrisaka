@@ -12,6 +12,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SppgController;
 use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Route;
@@ -93,6 +94,16 @@ Route::post('/stock/in', [StockController::class, 'storeIn'])->name('stock.store
 Route::get('/stock/adjustment', [StockController::class, 'createAdjustment'])->name('stock.create-adjustment');
 Route::post('/stock/adjustment', [StockController::class, 'storeAdjustment'])->name('stock.store-adjustment');
 Route::get('/stock/history', [StockController::class, 'history'])->name('stock.history');
+
+// Pengiriman & Distribusi
+Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+Route::get('/shipments/create', [ShipmentController::class, 'create'])->name('shipments.create');
+Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
+Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
+Route::patch('/shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.update-status');
+Route::post('/shipments/{shipment}/photos', [ShipmentController::class, 'uploadPhoto'])->name('shipments.upload-photo');
+Route::delete('/shipments/photos/{photo}', [ShipmentController::class, 'deletePhoto'])->name('shipments.delete-photo');
+Route::get('/shipments/{shipment}/surat-jalan', [ShipmentController::class, 'printSuratJalan'])->name('shipments.surat-jalan');
 
 // Laporan
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
